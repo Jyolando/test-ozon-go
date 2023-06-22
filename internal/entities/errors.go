@@ -13,3 +13,7 @@ type RunError struct {
 type MissingStorageTypeError struct {
 	error
 }
+
+type IncorrectPsqlStorage struct {
+	error
+}

@@ -28,6 +28,8 @@ type Server struct {
 }
 
 func NewServer() (*Server, error) {
+	var err error
+
 	mode := os.Getenv("STORAGE_TYPE")
 	if len(mode) == 0 {
 		return nil, entities.MissingStorageTypeError{}
@@ -38,7 +40,9 @@ func NewServer() (*Server, error) {
 	if mode == "memory" {
 		server.storage = database.NewMemoryStorage()
 	} else if mode == "postgresql" {
-		log.Info("psql storage")
+		if server.storage, err = database.NewPsqlStorage(); err != nil {
+			return nil, entities.IncorrectPsqlStorage{}
+		}
 	} else {
 		return nil, entities.MissingStorageTypeError{}
 	}
