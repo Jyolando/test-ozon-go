@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package api;
+
+option go_package="./api";
+
+service URLShortener {
+  rpc AddURL(AddURLRequest) returns (AddURLResponse){}
+  rpc GetURL(GetURLRequest) returns (GetURLResponse){}
+}
+
+message ShortenedURL {
+  string originalURL = 1;
+  string shortenedURL = 2;
+}
+
+message AddURLRequest {
+  string url = 1;
+}
+
+message  AddURLResponse {
+  ShortenedURL url = 1;
+}
+
+message GetURLRequest {
+  string url = 1;
+}
+
+message GetURLResponse {
+  repeated ShortenedURL url = 1;
+}
