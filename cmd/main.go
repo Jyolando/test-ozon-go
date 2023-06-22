@@ -2,8 +2,8 @@ package main
 
 import (
 	"errors"
-	"github.com/jyolando/test-ozon-go/internal/backend"
 	"github.com/jyolando/test-ozon-go/internal/entities"
+	"github.com/jyolando/test-ozon-go/internal/handlers"
 	"log"
 )
 
@@ -14,7 +14,7 @@ const (
 
 func main() {
 	var errInfo string
-	if server, err := backend.NewServer(); err != nil {
+	if server, err := handlers.NewServer(); err != nil {
 		if errors.As(err, &entities.MissingStorageTypeError{}) {
 			errInfo = MissingStorageTypeError
 		}

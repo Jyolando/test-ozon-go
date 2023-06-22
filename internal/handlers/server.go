@@ -1,4 +1,4 @@
-package backend
+package handlers
 
 import (
 	"context"
@@ -12,12 +12,6 @@ import (
 	"google.golang.org/grpc/status"
 	"net"
 	"os"
-)
-
-type contextKey string
-
-const (
-	storageKey contextKey = "storage"
 )
 
 var log = logrus.New()
