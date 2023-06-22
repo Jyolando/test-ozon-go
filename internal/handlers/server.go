@@ -33,10 +33,12 @@ func NewServer() (*Server, error) {
 
 	if mode == "memory" {
 		server.storage = database.NewMemoryStorage()
+		log.Info("Storage: In-memory")
 	} else if mode == "postgresql" {
 		if server.storage, err = database.NewPsqlStorage(); err != nil {
 			return nil, entities.IncorrectPsqlStorage{}
 		}
+		log.Info("Storage: Postgresql")
 	} else {
 		return nil, entities.MissingStorageTypeError{}
 	}
@@ -73,7 +75,7 @@ func (s *Server) GetURL(ctx context.Context, request *api.GetURLRequest) (*api.G
 }
 
 func (s *Server) Run() error {
-	lis, err := net.Listen("tcp", "localhost:9000")
+	lis, err := net.Listen("tcp", ":9000")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 		return entities.RunError{}

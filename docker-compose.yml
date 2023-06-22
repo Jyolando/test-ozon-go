@@ -1,0 +1,62 @@
+version: "3.8"
+services:
+  psql_database:
+    image: postgres
+    restart: on-failure
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - data:/var/lib/postgresql/data
+    profiles:
+      - postgresql
+    env_file:
+      - .env
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 3s
+
+  psql_migrate:
+    image: migrate/migrate
+    volumes:
+      - ./migrations:/migrations
+    env_file:
+      - .env
+    command: -path ./migrations -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@psql_database:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable up 1
+    depends_on:
+      psql_database:
+        condition: service_healthy
+    profiles:
+      - postgresql
+
+  backend_memory:
+    build: .
+    ports:
+      - "9000:9000"
+    env_file:
+      - .env
+    environment:
+      - STORAGE_TYPE=memory
+    profiles:
+      - memory
+    networks:
+      - default
+
+  backend_postgresql:
+    build: .
+    ports:
+      - "9000:9000"
+    env_file:
+      - .env
+    environment:
+      - STORAGE_TYPE=postgresql
+      - POSTGRES_HOST=psql_database
+    depends_on:
+      - psql_database
+      - psql_migrate
+    profiles:
+      - postgresql
+    networks:
+      - default
+
+volumes:
+  data:
