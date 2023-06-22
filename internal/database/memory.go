@@ -7,11 +7,13 @@ import (
 	"github.com/jyolando/test-ozon-go/pkg/helpers"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"sync"
 )
 
 type MemoryStorage struct {
 	originalAsKey map[string]string
 	shortAsKey    map[string]string
+	sync.RWMutex
 }
 
 func (m *MemoryStorage) AddURL(ctx context.Context, request *api.AddURLRequest) (*api.AddURLResponse, error) {
@@ -19,6 +21,9 @@ func (m *MemoryStorage) AddURL(ctx context.Context, request *api.AddURLRequest) 
 		response = &api.AddURLResponse{}
 		err      error
 	)
+
+	m.RWMutex.Lock()
+	defer m.RWMutex.Unlock()
 
 	hashOriginalLink := helpers.GetMD5Hash(request.GetUrl())
 	if savedLink, ok := m.originalAsKey[hashOriginalLink]; ok {
@@ -41,6 +46,9 @@ func (m *MemoryStorage) GetURL(ctx context.Context, request *api.GetURLRequest) 
 		err      error
 	)
 
+	m.RWMutex.RLock()
+	defer m.RWMutex.RUnlock()
+
 	hashShortLink := helpers.GetMD5Hash(request.GetUrl())
 	if originalLink, ok := m.shortAsKey[hashShortLink]; ok {
 		response, err = &api.GetURLResponse{Url: &api.ShortenedURL{OriginalURL: originalLink, ShortenedURL: request.Url}}, nil
@@ -52,9 +60,8 @@ func (m *MemoryStorage) GetURL(ctx context.Context, request *api.GetURLRequest) 
 }
 
 func NewMemoryStorage() *MemoryStorage {
-	ms := &MemoryStorage{}
-	ms.originalAsKey = make(map[string]string)
-	ms.shortAsKey = make(map[string]string)
-
-	return ms
+	return &MemoryStorage{
+		originalAsKey: make(map[string]string),
+		shortAsKey:    make(map[string]string),
+	}
 }
