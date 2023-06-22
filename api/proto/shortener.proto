@@ -27,5 +27,5 @@ message GetURLRequest {
 }
 
 message GetURLResponse {
-  repeated ShortenedURL url = 1;
+  ShortenedURL url = 1;
 }

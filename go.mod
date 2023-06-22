@@ -5,7 +5,12 @@ go 1.20
 require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
+	github.com/jackc/pgx v3.6.2+incompatible // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
+	github.com/matoous/go-nanoid v1.5.0 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
+	golang.org/x/crypto v0.10.0 // indirect
 	golang.org/x/net v0.11.0 // indirect
 	golang.org/x/sys v0.9.0 // indirect
 	golang.org/x/text v0.10.0 // indirect

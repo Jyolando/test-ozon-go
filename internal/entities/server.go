@@ -1,11 +1,16 @@
 package entities
 
 import (
-	"github.com/gorilla/mux"
-	pb "github.com/jyolando/test-ozon-go/pkg/api/proto"
+	"context"
+	api "github.com/jyolando/test-ozon-go/pkg/api/proto"
 )
 
-type Server struct {
-	pb.UnimplementedURLShortenerServer
-	router *mux.Router
+type Database interface {
+	AddURL(context.Context, *api.AddURLRequest) (*api.AddURLResponse, error)
+	GetURL(context.Context, *api.GetURLRequest) (*api.GetURLResponse, error)
+}
+
+type Link struct {
+	OriginalLink string
+	ShortLink    string
 }

@@ -57,7 +57,7 @@ func (c *uRLShortenerClient) GetURL(ctx context.Context, in *GetURLRequest, opts
 	return out, nil
 }
 
-// URLShortenerServer is the backend API for URLShortener service.
+// URLShortenerServer is the server API for URLShortener service.
 // All implementations must embed UnimplementedURLShortenerServer
 // for forward compatibility
 type URLShortenerServer interface {
