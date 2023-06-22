@@ -14,17 +14,6 @@ const (
 
 func main() {
 	var errInfo string
-	//lis, err := net.Listen("tcp", "localhost:9000")
-	//if err != nil {
-	//	log.Fatalf("failed to listen: %v", err)
-	//}
-	//
-	//s := grpc.NewServer()
-	//api.RegisterURLShortenerServer(s, &backend.Server{})
-	//if err := s.Serve(lis); err != nil {
-	//	log.Fatalf("failed to serve: %v", err)
-	//}
-
 	if server, err := backend.NewServer(); err != nil {
 		if errors.As(err, &entities.MissingStorageTypeError{}) {
 			errInfo = MissingStorageTypeError
