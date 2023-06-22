@@ -66,7 +66,7 @@ func (p *PsqlStorage) AddURL(ctx context.Context, request *api.AddURLRequest) (*
 	}
 	defer p.pool.Release(conn)
 
-	if shortLink, err := helpers.GenToken(); err != nil {
+	if shortLink, err := helpers.GenToken(10); err != nil {
 		return nil, status.Error(codes.Internal, entities.HTTP500)
 	} else if _, err := conn.Exec(qry, request.GetUrl(), shortLink); err != nil {
 		return nil, status.Error(codes.Internal, entities.HTTP500)

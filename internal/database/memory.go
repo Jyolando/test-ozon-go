@@ -28,7 +28,7 @@ func (m *MemoryStorage) AddURL(ctx context.Context, request *api.AddURLRequest) 
 	hashOriginalLink := helpers.GetMD5Hash(request.GetUrl())
 	if savedLink, ok := m.originalAsKey[hashOriginalLink]; ok {
 		response, err = &api.AddURLResponse{Url: &api.ShortenedURL{OriginalURL: request.GetUrl(), ShortenedURL: savedLink}}, nil
-	} else if shortLink, err := helpers.GenToken(); err == nil {
+	} else if shortLink, err := helpers.GenToken(10); err == nil {
 		hashShortLink := helpers.GetMD5Hash(shortLink)
 		m.originalAsKey[hashOriginalLink] = shortLink
 		m.shortAsKey[hashShortLink] = request.GetUrl()
