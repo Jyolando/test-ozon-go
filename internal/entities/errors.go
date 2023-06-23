@@ -1,19 +1,17 @@
 package entities
 
-const (
-	HTTP400 = "invalid link"
-	HTTP404 = "element not found"
-	HTTP500 = "server error"
+import (
+	"errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-type RunError struct {
-	error
-}
+var (
+	InvalidLink = status.Error(codes.InvalidArgument, "invalid link")
+	NotFound    = status.Error(codes.NotFound, "element not found")
+	ServerError = status.Error(codes.Internal, "server error")
 
-type MissingStorageTypeError struct {
-	error
-}
-
-type IncorrectPsqlStorage struct {
-	error
-}
+	MissingStorageTypeError   = errors.New("missing storage type")
+	IncorrectPsqlStorageError = errors.New("psql authentication data is incorrect")
+	RunError                  = errors.New("internal error, shutting down")
+)

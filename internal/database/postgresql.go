@@ -6,25 +6,35 @@ import (
 	"github.com/jyolando/test-ozon-go/internal/entities"
 	api "github.com/jyolando/test-ozon-go/pkg/api/proto"
 	"github.com/jyolando/test-ozon-go/pkg/helpers"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	log "github.com/sirupsen/logrus"
 )
 
 type PsqlStorage struct {
 	pool *pgx.ConnPool
+
+	logger *log.Entry
 }
 
-func NewPsqlStorage() (*PsqlStorage, error) {
+func NewPsqlStorage(l *log.Logger) (*PsqlStorage, error) {
 	config, err := helpers.ParsePsqlConfig()
 	if err != nil {
 		return nil, err
 	}
 
+	logger := l.WithField("storage", "postgresql")
+
 	if pool, err := pgx.NewConnPool(*config); err != nil {
 		return nil, err
 	} else {
-		return &PsqlStorage{pool: pool}, nil
+		return &PsqlStorage{
+			pool:   pool,
+			logger: logger,
+		}, nil
 	}
+}
+
+func (p *PsqlStorage) GetStorageType() string {
+	return "postgresql"
 }
 
 func (p *PsqlStorage) checkURLExists(originalLink string) (*api.AddURLResponse, error) {
@@ -36,7 +46,7 @@ func (p *PsqlStorage) checkURLExists(originalLink string) (*api.AddURLResponse, 
 
 	conn, err := p.pool.Acquire()
 	if err != nil {
-		return nil, status.Error(codes.Internal, entities.HTTP500)
+		return nil, entities.ServerError
 	}
 	defer p.pool.Release(conn)
 
@@ -57,21 +67,35 @@ func (p *PsqlStorage) AddURL(ctx context.Context, request *api.AddURLRequest) (*
 	`
 
 	if link, err := p.checkURLExists(request.GetUrl()); err == nil {
+		p.logger.WithFields(log.Fields{
+			"request":  request,
+			"response": link,
+			"code":     0,
+		}).Info("addUrl request status: OK")
+
 		return link, nil
 	}
 
 	conn, err := p.pool.Acquire()
 	if err != nil {
-		return nil, status.Error(codes.Internal, entities.HTTP500)
+		return nil, entities.ServerError
 	}
 	defer p.pool.Release(conn)
 
 	if shortLink, err := helpers.GenToken(10); err != nil {
-		return nil, status.Error(codes.Internal, entities.HTTP500)
+		return nil, entities.ServerError
 	} else if _, err := conn.Exec(qry, request.GetUrl(), shortLink); err != nil {
-		return nil, status.Error(codes.Internal, entities.HTTP500)
+		return nil, entities.ServerError
 	} else {
-		return &api.AddURLResponse{Url: &api.ShortenedURL{ShortenedURL: shortLink, OriginalURL: request.GetUrl()}}, nil
+		response := &api.AddURLResponse{Url: &api.ShortenedURL{ShortenedURL: shortLink, OriginalURL: request.GetUrl()}}
+
+		p.logger.WithFields(log.Fields{
+			"request":  request,
+			"response": response,
+			"code":     0,
+		}).Info("addUrl request status: OK")
+
+		return response, nil
 	}
 }
 
@@ -84,15 +108,23 @@ func (p *PsqlStorage) GetURL(ctx context.Context, request *api.GetURLRequest) (*
 
 	conn, err := p.pool.Acquire()
 	if err != nil {
-		return nil, status.Error(codes.Internal, entities.HTTP500)
+		return nil, entities.ServerError
 	}
 	defer p.pool.Release(conn)
 
 	var originalLink string
 	err = conn.QueryRow(qry, request.GetUrl()).Scan(&originalLink)
 	if err != nil {
-		return nil, status.Error(codes.NotFound, entities.HTTP404)
+		return nil, entities.NotFound
 	} else {
-		return &api.GetURLResponse{Url: &api.ShortenedURL{ShortenedURL: request.GetUrl(), OriginalURL: originalLink}}, nil
+		response := &api.GetURLResponse{Url: &api.ShortenedURL{ShortenedURL: request.GetUrl(), OriginalURL: originalLink}}
+
+		p.logger.WithFields(log.Fields{
+			"request":  request,
+			"response": response,
+			"code":     0,
+		}).Info("getUrl request status: OK")
+
+		return response, nil
 	}
 }

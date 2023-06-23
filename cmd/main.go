@@ -1,26 +1,24 @@
 package main
 
 import (
-	"errors"
-	"github.com/jyolando/test-ozon-go/internal/entities"
 	"github.com/jyolando/test-ozon-go/internal/handlers"
-	"log"
+	"github.com/jyolando/test-ozon-go/pkg/helpers"
 )
 
 const (
-	RunError                = "run error"
-	MissingStorageTypeError = "missing storage type"
+	RunError = "run error"
 )
 
 func main() {
-	var errInfo string
-	if server, err := handlers.NewServer(); err != nil {
-		if errors.As(err, &entities.MissingStorageTypeError{}) {
-			errInfo = MissingStorageTypeError
-		}
-		log.Fatal(errInfo)
+	//var errInfo string
+
+	logger := helpers.NewLogger()
+
+	logger.Info("starting")
+	if server, err := handlers.NewServer(logger); err != nil {
+		logger.Error(err)
 	} else if err := server.Run(); err != nil {
-		log.Fatal(RunError)
+		logger.Fatal(RunError)
 	}
 
 }
