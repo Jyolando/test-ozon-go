@@ -82,7 +82,7 @@ func (p *PsqlStorage) AddURL(ctx context.Context, request *api.AddURLRequest) (*
 	}
 	defer p.pool.Release(conn)
 
-	if shortLink, err := helpers.GenToken(10); err != nil {
+	if shortLink, err := p.getSecureToken(10); err != nil {
 		return nil, entities.ServerError
 	} else if _, err := conn.Exec(qry, request.GetUrl(), shortLink); err != nil {
 		return nil, entities.ServerError
@@ -126,5 +126,33 @@ func (p *PsqlStorage) GetURL(ctx context.Context, request *api.GetURLRequest) (*
 		}).Info("getUrl success")
 
 		return response, nil
+	}
+}
+
+func (p *PsqlStorage) getSecureToken(length int) (string, error) {
+	qry := `
+		SELECT original_link
+		FROM links
+		WHERE short_link = $1
+	`
+
+	for {
+		conn, err := p.pool.Acquire()
+		if err != nil {
+			return "", entities.ServerError
+		}
+
+		token, err := helpers.GenToken(length)
+		if err != nil {
+			return "", err
+		}
+
+		var link string
+		err = conn.QueryRow(qry, token).Scan(&link)
+		if err != nil {
+			return token, nil
+		}
+
+		p.pool.Release(conn)
 	}
 }
