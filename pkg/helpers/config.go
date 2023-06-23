@@ -18,6 +18,7 @@ func ParsePsqlConfig() (*pgx.ConnPoolConfig, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	PgHost := os.Getenv("POSTGRES_HOST")
 	PgPort := os.Getenv("POSTGRES_PORT")
 	PgDatabase := os.Getenv("POSTGRES_DB")

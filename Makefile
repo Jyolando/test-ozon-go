@@ -4,9 +4,10 @@ MEM = memory
 all:
 	@echo "Specify storage type: make postgresql or make memory"
 
-#test:
-#	@echo "Running tests...."
-#    @go test ./internal/config_parser
+test:
+	@echo "Running tests...."
+	@go test ./pkg/helpers
+
 #   	@go test ./internal/tools
 #   	@go test ./internal/database
 

@@ -41,13 +41,11 @@ func (m *MemoryStorage) AddURL(ctx context.Context, request *api.AddURLRequest) 
 	m.RWMutex.Lock()
 	defer m.RWMutex.Unlock()
 
-	hashOriginalLink := helpers.GetMD5Hash(request.GetUrl())
-	if savedLink, ok := m.originalAsKey[hashOriginalLink]; ok {
+	if savedLink, ok := m.originalAsKey[request.GetUrl()]; ok {
 		response = &api.AddURLResponse{Url: &api.ShortenedURL{OriginalURL: request.GetUrl(), ShortenedURL: savedLink}}
-	} else if shortLink, err := helpers.GenToken(10); err == nil {
-		hashShortLink := helpers.GetMD5Hash(shortLink)
-		m.originalAsKey[hashOriginalLink] = shortLink
-		m.shortAsKey[hashShortLink] = request.GetUrl()
+	} else if shortLink, err := m.getSecureToken(10); err == nil {
+		m.originalAsKey[request.GetUrl()] = shortLink
+		m.shortAsKey[shortLink] = request.GetUrl()
 		response = &api.AddURLResponse{Url: &api.ShortenedURL{OriginalURL: request.GetUrl(), ShortenedURL: shortLink}}
 	} else {
 		e = entities.ServerError
@@ -72,8 +70,7 @@ func (m *MemoryStorage) GetURL(ctx context.Context, request *api.GetURLRequest) 
 	m.RWMutex.RLock()
 	defer m.RWMutex.RUnlock()
 
-	hashShortLink := helpers.GetMD5Hash(request.GetUrl())
-	if originalLink, ok := m.shortAsKey[hashShortLink]; ok {
+	if originalLink, ok := m.shortAsKey[request.GetUrl()]; ok {
 		response = &api.GetURLResponse{Url: &api.ShortenedURL{OriginalURL: originalLink, ShortenedURL: request.Url}}
 	} else {
 		e = entities.NotFound
@@ -87,4 +84,17 @@ func (m *MemoryStorage) GetURL(ctx context.Context, request *api.GetURLRequest) 
 		}).Info("getUrl success")
 	}
 	return response, e
+}
+
+func (m *MemoryStorage) getSecureToken(length int) (string, error) {
+	for {
+		token, err := helpers.GenToken(length)
+		if err != nil {
+			return "", err
+		}
+
+		if _, ok := m.shortAsKey[token]; !ok {
+			return token, nil
+		}
+	}
 }
