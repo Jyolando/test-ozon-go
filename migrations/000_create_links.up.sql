@@ -13,10 +13,10 @@ CREATE TABLE "public"."links"
 (
     "id"         int8 NOT NULL DEFAULT nextval('links_id_seq'::regclass),
     "original_link"  text COLLATE "pg_catalog"."default",
-    "short_link" varchar(10) COLLATE "pg_catalog"."default"
+    "short_link" varchar(10) COLLATE "pg_catalog"."default",
+
+    CONSTRAINT pk_links_id PRIMARY KEY (id)
 );
 
-ALTER TABLE "public"."links"
-    ADD CONSTRAINT "original_link" UNIQUE ("original_link");
-ALTER TABLE "public"."links"
-    ADD CONSTRAINT "links_pkey" PRIMARY KEY ("id");
+CREATE UNIQUE INDEX uq_links_original_short_links ON links
+    USING BTREE(original_link, short_link);

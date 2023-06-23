@@ -50,6 +50,11 @@ func NewServer(logger *log.Logger) (*Server, error) {
 
 func (s *Server) AddURL(ctx context.Context, in *api.AddURLRequest) (*api.AddURLResponse, error) {
 	if originalLink := in.Url; !helpers.IsURL(originalLink) || len(originalLink) == 0 {
+		s.logger.WithFields(log.Fields{
+			"request": in,
+			"storage": s.storage.GetStorageType(),
+		}).Warn(entities.InvalidLink)
+
 		return nil, entities.InvalidLink
 	} else {
 		if links, err := s.storage.AddURL(ctx, in); err != nil {
