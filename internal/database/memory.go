@@ -34,8 +34,8 @@ func (m *MemoryStorage) GetStorageType() string {
 
 func (m *MemoryStorage) AddURL(ctx context.Context, request *api.AddURLRequest) (*api.AddURLResponse, error) {
 	var (
-		response = &api.AddURLResponse{}
-		err      error
+		e        error
+		response *api.AddURLResponse
 	)
 
 	m.RWMutex.Lock()
@@ -43,14 +43,14 @@ func (m *MemoryStorage) AddURL(ctx context.Context, request *api.AddURLRequest) 
 
 	hashOriginalLink := helpers.GetMD5Hash(request.GetUrl())
 	if savedLink, ok := m.originalAsKey[hashOriginalLink]; ok {
-		response, err = &api.AddURLResponse{Url: &api.ShortenedURL{OriginalURL: request.GetUrl(), ShortenedURL: savedLink}}, nil
+		response = &api.AddURLResponse{Url: &api.ShortenedURL{OriginalURL: request.GetUrl(), ShortenedURL: savedLink}}
 	} else if shortLink, err := helpers.GenToken(10); err == nil {
 		hashShortLink := helpers.GetMD5Hash(shortLink)
 		m.originalAsKey[hashOriginalLink] = shortLink
 		m.shortAsKey[hashShortLink] = request.GetUrl()
-		response, err = &api.AddURLResponse{Url: &api.ShortenedURL{OriginalURL: request.GetUrl(), ShortenedURL: shortLink}}, nil
+		response = &api.AddURLResponse{Url: &api.ShortenedURL{OriginalURL: request.GetUrl(), ShortenedURL: shortLink}}
 	} else {
-		response, err = nil, entities.ServerError
+		e = entities.ServerError
 	}
 
 	if response != nil {
@@ -58,15 +58,15 @@ func (m *MemoryStorage) AddURL(ctx context.Context, request *api.AddURLRequest) 
 			"request":  request,
 			"response": response,
 			"code":     0,
-		}).Info("addUrl request status: OK")
+		}).Info("addUrl success")
 	}
-	return response, err
+	return response, e
 }
 
 func (m *MemoryStorage) GetURL(ctx context.Context, request *api.GetURLRequest) (*api.GetURLResponse, error) {
 	var (
-		response = &api.GetURLResponse{}
-		err      error
+		response *api.GetURLResponse
+		e        error
 	)
 
 	m.RWMutex.RLock()
@@ -74,9 +74,9 @@ func (m *MemoryStorage) GetURL(ctx context.Context, request *api.GetURLRequest) 
 
 	hashShortLink := helpers.GetMD5Hash(request.GetUrl())
 	if originalLink, ok := m.shortAsKey[hashShortLink]; ok {
-		response, err = &api.GetURLResponse{Url: &api.ShortenedURL{OriginalURL: originalLink, ShortenedURL: request.Url}}, nil
+		response = &api.GetURLResponse{Url: &api.ShortenedURL{OriginalURL: originalLink, ShortenedURL: request.Url}}
 	} else {
-		response, err = nil, entities.NotFound
+		e = entities.NotFound
 	}
 
 	if response != nil {
@@ -84,7 +84,7 @@ func (m *MemoryStorage) GetURL(ctx context.Context, request *api.GetURLRequest) 
 			"request":  request,
 			"response": response,
 			"code":     0,
-		}).Info("getUrl request status: OK")
+		}).Info("getUrl success")
 	}
-	return response, err
+	return response, e
 }

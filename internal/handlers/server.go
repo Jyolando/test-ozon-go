@@ -76,7 +76,7 @@ func (s *Server) Run() error {
 	s.logger.Info("starting on 127.0.0.1" + port)
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
-		s.logger.Error("failed to net listen: %v", err)
+		s.logger.Errorf("failed to net listen: %v", err)
 		return entities.RunError
 	}
 	s.logger.Info("started on 127.0.0.1" + port)
@@ -85,7 +85,7 @@ func (s *Server) Run() error {
 	api.RegisterURLShortenerServer(grpcServer, s)
 	s.logger.Info("starting grpc server")
 	if err := grpcServer.Serve(lis); err != nil {
-		s.logger.Error("failed to grpc serve: %v", err)
+		s.logger.Errorf("failed to grpc serve: %v", err)
 		return entities.RunError
 	}
 	return nil

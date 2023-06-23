@@ -71,7 +71,7 @@ func (p *PsqlStorage) AddURL(ctx context.Context, request *api.AddURLRequest) (*
 			"request":  request,
 			"response": link,
 			"code":     0,
-		}).Info("addUrl request status: OK")
+		}).Info("addUrl success")
 
 		return link, nil
 	}
@@ -93,7 +93,7 @@ func (p *PsqlStorage) AddURL(ctx context.Context, request *api.AddURLRequest) (*
 			"request":  request,
 			"response": response,
 			"code":     0,
-		}).Info("addUrl request status: OK")
+		}).Info("addUrl success")
 
 		return response, nil
 	}
@@ -123,7 +123,7 @@ func (p *PsqlStorage) GetURL(ctx context.Context, request *api.GetURLRequest) (*
 			"request":  request,
 			"response": response,
 			"code":     0,
-		}).Info("getUrl request status: OK")
+		}).Info("getUrl success")
 
 		return response, nil
 	}
